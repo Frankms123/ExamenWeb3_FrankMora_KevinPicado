@@ -3,13 +3,12 @@
 	
 	$IDCarpetaActual = $_GET["IDCarpeta"] ?? null;
 
-	//Inicio la sesión
 	session_start();
 	
 	//Utiliza los datos de sesion comprueba que el usuario este autenticado
 	if($_SESSION["autenticado"] != "SI") {
 		header("Location: index.php");
-		exit(); //fin del scrip
+		exit(); 
 	}
 	$usuarioActivo = $_SESSION["nombre"];
 	

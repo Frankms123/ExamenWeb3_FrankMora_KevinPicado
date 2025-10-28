@@ -1,0 +1,9 @@
+Deny from all
+#hailitar solo estas tres ip 
+Allow from 100.91.96.84
+Allow 192.168.100.72
+Allow from 100.72.162.75
+
+
+Allow from 127.0.0.1
+Allow from ::1
