@@ -1,9 +1,12 @@
-Deny from all
-#hailitar solo estas tres ip 
-Allow from 100.91.96.84
-Allow 192.168.100.72
-Allow from 100.72.162.75
+<RequireAll>
+    Require all granted
+    # Require ip 100.91.96.84
+    # Require ip 192.168.0
+    # Require ip 100.72.162.75
+    # Require ip 186.32.219.191
+    # Require ip 127.0.0.1
+    # Require ip ::1
+</RequireAll>
 
-
-Allow from 127.0.0.1
-Allow from ::1
+# Esta restricción es para permitir cargar archivos que sean menores a 20MByte
+php_value upload_max_filesize 20M

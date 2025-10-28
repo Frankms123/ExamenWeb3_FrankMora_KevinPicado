@@ -24,6 +24,7 @@ CREATE TABLE archivos (
     fecha_almacenado DATETIME DEFAULT CURRENT_TIMESTAMP,
     IDCarpeta INT NOT NULL,
     extension VARCHAR(10),
+	contenido_archivo LONGBLOB NOT NULL,
     FOREIGN KEY (IDCarpeta) REFERENCES carpetas(IDCarpeta) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
