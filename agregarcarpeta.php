@@ -1,28 +1,22 @@
 <?php
 	require_once('codigos/conexion.inc'); 
 	$carpetaActual = $_GET["IDCarpeta"];
-    
-	var_dump($_GET["IDCarpeta"]);
-	var_dump($carpetaActual);
 
 	$carpetaPadreID = intval($carpetaActual);
-	var_dump($carpetaPadreID);
-
+	
 	//Inicio la sesiÃ³n
     session_start();
 
     //Utiliza los datos de sesion comprueba que el usuario este autenticado
     if ($_SESSION["autenticado"] != "SI") {
-       header("Location: index.php");
-        exit(); //fin del scrip
+       	header("Location: index.php");
+    	exit(); //fin del scrip
     }
 
 	//declara ruta carpeta del usuario
-	$Accion_Formulario = $_SERVER['PHP_SELF'];
+	$Accion_Formulario = $_SERVER['PHP_SELF'] . "?IDCarpeta=" . $carpetaPadreID;
     if ((isset($_POST["OC_Aceptar"])) && ($_POST["OC_Aceptar"] == "frmCarpeta")) {
 		$nombreCarpeta = trim($_POST['txtCarpeta']);
-    	
-		echo "<script>alert('" . $carpetaPadreID . "');</script>";
 		
 		if ($nombreCarpeta === "") {
         	echo "<script>alert('Debe ingresar un nombre de carpeta.');</script>";

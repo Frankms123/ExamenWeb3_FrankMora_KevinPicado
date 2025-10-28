@@ -68,7 +68,7 @@
 							while ($elem = mysqli_fetch_assoc($directorio)) {
 								echo '<tr>';
 								echo '<td><a href="carpetas.php?IDCarpeta=' . $elem['IDCarpeta'] . '">' . htmlspecialchars($elem['NombreCarpeta']) . '</a></td>';
-								echo '<td><a href="./codigos/borcarpeta.php?id=' . $elem['IDCarpeta'] . '">Borrar</a></td>';
+								echo '<td><a href="./codigos/borcarpeta.php?IDCarpeta=' . $elem['IDCarpeta'] . '">Borrar</a></td>';
 								echo '</tr>';
 								$conta++;
 							} // fin del while
