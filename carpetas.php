@@ -11,19 +11,56 @@
 		exit(); 
 	}
 	$usuarioActivo = $_SESSION["nombre"];
-	
+
+	$auxSql = sprintf("SELECT NombreCarpeta FROM carpetas WHERE IDCarpeta = '%d'", intval($IDCarpetaActual));
+	$res = mysqli_query($conex, $auxSql);
+	$fila = mysqli_fetch_assoc($res);
+	$NombreCarpetaActual = $fila["NombreCarpeta"] ?? null;
+	$arbolCarpetas = [$IDCarpetaActual => $NombreCarpetaActual];
+
 	if (empty($IDCarpetaActual)) {
-		$auxSql = sprintf("SELECT b.* FROM carpetas a INNER JOIN carpetas b ON a.IDCarpeta = b.CarpetaPadreID WHERE a.NombreCarpeta = '%s' AND a.IsRoot = 1", $_SESSION["usuario"]);
+		$auxSql = sprintf(
+			"SELECT b.* 
+			FROM carpetas a 
+			INNER JOIN carpetas b ON a.IDCarpeta = b.CarpetaPadreID 
+			WHERE a.NombreCarpeta = '%s' AND a.IsRoot = 1", $_SESSION["usuario"]);
 		$directorio = mysqli_query($conex,$auxSql);
 		
 		$auxSql = sprintf("SELECT IDCarpeta FROM carpetas WHERE NombreCarpeta = '%s' AND IsRoot = 1", $_SESSION["usuario"]);
 		$res = mysqli_query($conex, $auxSql);
 		$fila = mysqli_fetch_assoc($res);
 		$IDCarpetaActual = $fila["IDCarpeta"] ?? null;
+
+		$auxSql = sprintf("SELECT NombreCarpeta FROM carpetas WHERE IDCarpeta = '%d'", intval($IDCarpetaActual));
+		$res = mysqli_query($conex, $auxSql);
+		$fila = mysqli_fetch_assoc($res);
+		$NombreCarpetaActual = $fila["NombreCarpeta"] ?? null;
+		$arbolCarpetas = [$IDCarpetaActual => $NombreCarpetaActual];
 	} else {
 		// Si hay IDCarpeta, buscar sus subcarpetas
 		$auxSql = sprintf("SELECT * FROM carpetas WHERE CarpetaPadreID = %d", $IDCarpetaActual);
 		$directorio = mysqli_query($conex, $auxSql);
+
+		$buscaCarpeta = true;
+		$IDCarpeta = $IDCarpetaActual;
+		while ($buscaCarpeta) {
+			$auxSql = sprintf(
+				"SELECT b.* 
+				FROM carpetas a 
+					inner join carpetas b on a.CarpetaPadreID = b.IDCarpeta
+			 	WHERE a.IDCarpeta = %d", $IDCarpeta);
+			
+			$resultado = mysqli_query($conex, $auxSql);
+			$carpetaPadre = mysqli_fetch_assoc($resultado);
+			
+			if (!$carpetaPadre) {
+				break;
+			}
+
+			$IDCarpeta = intval($carpetaPadre['IDCarpeta']);
+			$arbolCarpetas = [$IDCarpeta => $carpetaPadre['NombreCarpeta']] + $arbolCarpetas;
+			$buscaCarpeta = isset($carpetaPadre['IsRoot']) && intval($carpetaPadre['IsRoot']) === 0;
+		}
 	}
 
 	// Consultar archivos de la carpeta actual
@@ -59,6 +96,11 @@
 					$conta = 0;
 					echo '<a href=./agregarcarpeta.php?IDCarpeta=' . $IDCarpetaActual . '>'.'Agregar directorio</a>';
 					echo '<br><br>';
+					echo '<strong>Ruta: ';
+					foreach(array_keys($arbolCarpetas) as $idCarpeta) {
+						echo ' -> <a href="carpetas.php?IDCarpeta=' . $idCarpeta . '">' . htmlspecialchars($arbolCarpetas[$idCarpeta]) . '</a>';
+					}// fin del for
+					echo '</strong><br><br>';
 					echo '<table class="table table-striped">';
 						echo '<tr>';
 							echo '<th>Nombre</th>';
@@ -76,13 +118,13 @@
 					echo '</table>';
 					echo '<br><br>';
 					if($conta == 0) {
-						echo 'La carpeta se encuentra vac&iacute;a';
+						echo 'No se encontraron otros directorios';
 						echo '<br><br>';
 					}	
 				?>
 				<?php
 					$conta = 0;
-					echo '<a href=./agrearchi.php?IDCarpeta=' . $IDCarpetaActual . '>Agregar archivo</a>';
+					echo '<hr><a href=./agrearchi.php?IDCarpeta=' . $IDCarpetaActual . '>Agregar archivo</a>';
 					echo '<br><br>';
 					echo '<table class="table table-striped">';
 						echo '<tr>';
@@ -100,7 +142,7 @@
 								$pesoMB = number_format($elem['peso'] / 1048576, 2);
 								
 								echo '<tr>';
-								echo '<td><a href="verarchi.php?id=' . $elem['IDArchivo'] . '">' . htmlspecialchars($elem['nombre_archivo']) . '</a></td>';
+								echo '<td><a href="verarchi.php?id=' . $elem['IDArchivo'] . '"target=_blank>' . htmlspecialchars($elem['nombre_archivo']) . '</a></td>';
 								echo '<td>' . $pesoMB . ' MB</td>';
 								echo '<td>' . htmlspecialchars($elem['tipo_documento']) . '</td>';
 								echo '<td>' . htmlspecialchars($elem['extension']) . '</td>';
@@ -114,7 +156,7 @@
 					echo '</table>';
 					echo '<br><br>';
 					if($conta == 0)
-						echo 'No se encontraron archivos en la carpeta';
+						echo 'No se encontraron archivos';
 					else{
 						echo 'Cantidad de archivos: ' . $conta;
 					}

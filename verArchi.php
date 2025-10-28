@@ -68,6 +68,7 @@
 	if (in_array($extension, $extensionesVisualizables)) {
 		header("Content-Type: " . $mimeType);
 		header("Content-Length: " . strlen($contenido));
+		header("Content-Disposition: inline; filename=\"" . basename($nombreArchivo) . "\"");
 		echo $contenido;
 	} else {
 		// Para otros archivos, forzar descarga
