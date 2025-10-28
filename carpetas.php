@@ -21,9 +21,15 @@
 		$res = mysqli_query($conex, $auxSql);
 		$fila = mysqli_fetch_assoc($res);
 		$IDCarpetaActual = $fila["IDCarpeta"] ?? null;
+	} else {
+		// Si hay IDCarpeta, buscar sus subcarpetas
+		$auxSql = sprintf("SELECT * FROM carpetas WHERE CarpetaPadreID = %d", $IDCarpetaActual);
+		$directorio = mysqli_query($conex, $auxSql);
 	}
 
-	$archivos = [];
+	// Consultar archivos de la carpeta actual
+	$auxSql = sprintf("SELECT * FROM archivos WHERE IDCarpeta = %d", $IDCarpetaActual);
+	$archivos = mysqli_query($conex, $auxSql);
 ?>
 <!doctype html>
 <html>
@@ -59,10 +65,10 @@
 							echo '<th>Nombre</th>';
 							echo '<th>Borrar</th>';
 						echo '</tr>';
-						if ($directorio) {
+						if ($directorio && mysqli_num_rows($directorio) > 0) {
 							while ($elem = mysqli_fetch_assoc($directorio)) {
 								echo '<tr>';
-								echo '<td><a href="abrArchi.php?IDCarpeta=' . $elem['IDCarpeta'] . '">' . htmlspecialchars($elem['NombreCarpeta']) . '</a></td>';
+								echo '<td><a href="carpetas.php?IDCarpeta=' . $elem['IDCarpeta'] . '">' . htmlspecialchars($elem['NombreCarpeta']) . '</a></td>';
 								echo '<td><a href="./codigos/borcarpeta.php?id=' . $elem['IDCarpeta'] . '">Borrar</a></td>';
 								echo '</tr>';
 								$conta++;
@@ -71,34 +77,36 @@
 					echo '</table>';
 					echo '<br><br>';
 					if($conta == 0) {
-						echo 'La carpeta se encuetra vac&iacute;a';
+						echo 'La carpeta se encuentra vac&iacute;a';
 						echo '<br><br>';
 					}	
 				?>
 				<?php
 					$conta = 0;
-					echo '<a href=./agrearchi.php>'.'Agregar archivo</a>';
+					echo '<a href=./agrearchi.php?IDCarpeta=' . $IDCarpetaActual . '>Agregar archivo</a>';
 					echo '<br><br>';
 					echo '<table class="table table-striped">';
 						echo '<tr>';
 							echo '<th>Nombre</th>';
 							echo '<th>Tama&ntilde;o</th>';
 							echo '<th>Tipo documento</th>';
-							echo '<th>Extension</th>';
+							echo '<th>Extensi&oacute;n</th>';
 							echo '<th>Fecha almacenado</th>';
 							echo '<th>Comentario</th>';
 							echo '<th>Borrar</th>';
 						echo '</tr>';
-						if ($archivos) {
+						if ($archivos && mysqli_num_rows($archivos) > 0) {
 							while ($elem = mysqli_fetch_assoc($archivos)) {
+								// Convertir peso de bytes a MB
+								$pesoMB = number_format($elem['peso'] / 1048576, 2);
+								
 								echo '<tr>';
-								echo '<td><a href="abrArchi.php?carpeta=' . $elem['IDCarpeta'] . '">' . htmlspecialchars($elem['NombreCarpeta']) . '</a></td>';
-								echo '<td>' . $elem['nombre_archivo'] . '</td>';
-								echo '<td>' . $elem['peso'] . '</td>';
-								echo '<td>' . $elem['tipo_documento'] . '</td>';
-								echo '<td>' . $elem['extension'] . '</td>';
+								echo '<td><a href="verarchi.php?id=' . $elem['IDArchivo'] . '">' . htmlspecialchars($elem['nombre_archivo']) . '</a></td>';
+								echo '<td>' . $pesoMB . ' MB</td>';
+								echo '<td>' . htmlspecialchars($elem['tipo_documento']) . '</td>';
+								echo '<td>' . htmlspecialchars($elem['extension']) . '</td>';
 								echo '<td>' . $elem['fecha_almacenado'] . '</td>';
-								echo '<td>' . $elem['comentario'] . '</td>';
+								echo '<td>' . htmlspecialchars($elem['comentario']) . '</td>';
 								echo '<td><a href="./codigos/borarchi.php?id=' . $elem['IDArchivo'] . '">Borrar</a></td>';
 								echo '</tr>';
 								$conta++;

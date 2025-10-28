@@ -1,13 +1,22 @@
 <?php
-	$archivo = $_GET['archi'];
+	require_once('conexion.inc');
+	
+	$idArchivo = $_GET['id'];
 	session_start();
 
-	$ruta = "d:\\mybox";
-    $ruta = $ruta.'/'.$_SESSION["usuario"].'/'.$archivo;
+	//Utiliza los datos de sesion comprueba que el usuario este autenticado
+	if ($_SESSION["autenticado"] != "SI") {
+		header("Location: ../index.php");
+		exit();
+	}
+
+	// Eliminar el archivo de la base de datos
+	$auxSql = sprintf("DELETE FROM archivos WHERE IDArchivo = %d", intval($idArchivo));
+	$resultado = mysqli_query($conex, $auxSql);
 
 	/*Se intenta eliminar un fichero y se informa del resultado.*/
-    echo "<h3>";
-		if (@unlink($ruta)){
+	echo "<h3>";
+		if ($resultado && mysqli_affected_rows($conex) > 0) {
 			echo ("Se ha eliminado el fichero.");
 		} else {
 			echo ("NO se pudo eliminar el fichero.");
