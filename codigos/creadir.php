@@ -1,5 +1,4 @@
 <?php
-	//Inicio la sesión
 	session_start();
 
 	//Utiliza los datos de sesion comprueba que el usuario este autenticado
