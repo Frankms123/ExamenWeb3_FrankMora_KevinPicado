@@ -25,7 +25,7 @@
                 	throw new Exception('Error al registrar la carpeta');
 				} else {
                     $_SESSION["primer_login"] = true;
-					header("location: codigos/creadir.php");
+					header("location: ../carpetas.php");
                 	exit();
 				}
             }
