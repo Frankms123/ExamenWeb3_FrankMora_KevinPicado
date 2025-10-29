@@ -35,3 +35,25 @@ CREATE TABLE usuarios (
     email varchar(20) unique,     
     primary key (usuario) 
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE archivos_compartidos (
+    IDArchivoCompartido INT AUTO_INCREMENT PRIMARY KEY,
+    ArchivoID INT NOT NULL,
+    compartido_de varchar(15),
+    compartido_usuario varchar(15),
+    FOREIGN KEY (ArchivoID) REFERENCES archivos(IDArchivo) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (compartido_de) REFERENCES usuarios(usuario) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (compartido_usuario) REFERENCES usuarios(usuario) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE (ArchivoID, compartido_usuario)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE carpetas_compartidas (
+    IDCarpetaCompartida INT AUTO_INCREMENT PRIMARY KEY,
+    CarpetaID INT NOT NULL,
+    compartido_de varchar(15),
+    compartido_usuario varchar(15),
+    FOREIGN KEY (CarpetaID) REFERENCES carpetas(IDCarpeta) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (compartido_de) REFERENCES usuarios(usuario) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (compartido_usuario) REFERENCES usuarios(usuario) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE (CarpetaID, compartido_usuario)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;

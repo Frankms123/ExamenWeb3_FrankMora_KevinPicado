@@ -25,7 +25,7 @@
 			INNER JOIN carpetas b ON a.IDCarpeta = b.CarpetaPadreID 
 			WHERE a.NombreCarpeta = '%s' AND a.IsRoot = 1", $_SESSION["usuario"]);
 		$directorio = mysqli_query($conex,$auxSql);
-		
+
 		$auxSql = sprintf("SELECT IDCarpeta FROM carpetas WHERE NombreCarpeta = '%s' AND IsRoot = 1", $_SESSION["usuario"]);
 		$res = mysqli_query($conex, $auxSql);
 		$fila = mysqli_fetch_assoc($res);
@@ -61,6 +61,24 @@
 			$arbolCarpetas = [$IDCarpeta => $carpetaPadre['NombreCarpeta']] + $arbolCarpetas;
 			$buscaCarpeta = isset($carpetaPadre['IsRoot']) && intval($carpetaPadre['IsRoot']) === 0;
 		}
+	}
+
+	if ($NombreCarpetaActual === $_SESSION["usuario"]){
+		// Carpetas compartidas
+		$auxSql = sprintf(
+			"SELECT a.*, b.compartido_de
+			FROM carpetas a 
+			INNER JOIN carpetas_compartidas b ON a.IDCarpeta = b.CarpetaID 
+			WHERE b.compartido_usuario = '%s'", $_SESSION["usuario"]);
+		$directorioCompartido = mysqli_query($conex,$auxSql);
+
+		// Archivos compartidos
+		$auxSql = sprintf(
+			"SELECT a.*, b.compartido_de
+			FROM archivos a 
+			INNER JOIN archivos_compartidos b ON a.IDArchivo = b.ArchivoID 
+			WHERE b.compartido_usuario = '%s'", $_SESSION["usuario"]);
+		$archivoCompartido = mysqli_query($conex,$auxSql);
 	}
 
 	// Consultar archivos de la carpeta actual
@@ -104,13 +122,25 @@
 					echo '<table class="table table-striped">';
 						echo '<tr>';
 							echo '<th>Nombre</th>';
+							echo '<th>Compartir</th>';
 							echo '<th>Borrar</th>';
 						echo '</tr>';
 						if ($directorio && mysqli_num_rows($directorio) > 0) {
 							while ($elem = mysqli_fetch_assoc($directorio)) {
 								echo '<tr>';
 								echo '<td><a href="carpetas.php?IDCarpeta=' . $elem['IDCarpeta'] . '">' . htmlspecialchars($elem['NombreCarpeta']) . '</a></td>';
+								echo '<td><a href="compcarpeta.php?IDCarpeta=' . $elem['IDCarpeta'] . '">Compartir</a></td>';
 								echo '<td><a href="./codigos/borcarpeta.php?IDCarpeta=' . $elem['IDCarpeta'] . '">Borrar</a></td>';
+								echo '</tr>';
+								$conta++;
+							} // fin del while
+						} // fin del if
+						if ($directorioCompartido && mysqli_num_rows($directorioCompartido) > 0) {
+							while ($elem = mysqli_fetch_assoc($directorioCompartido)) {
+								echo '<tr>';
+								echo '<td><a href="carpetas.php?IDCarpeta=' . $elem['IDCarpeta'] . '">Compartido de ' . htmlspecialchars($elem['compartido_de']) . ' -> ' . htmlspecialchars($elem['NombreCarpeta']) . '</a></td>';
+								echo '<td>No permitido</td>';
+								echo '<td>No permitido</td>';
 								echo '</tr>';
 								$conta++;
 							} // fin del while
@@ -134,6 +164,7 @@
 							echo '<th>Extensi&oacute;n</th>';
 							echo '<th>Fecha almacenado</th>';
 							echo '<th>Comentario</th>';
+							echo '<th>Compartir</th>';
 							echo '<th>Borrar</th>';
 						echo '</tr>';
 						if ($archivos && mysqli_num_rows($archivos) > 0) {
@@ -148,7 +179,26 @@
 								echo '<td>' . htmlspecialchars($elem['extension']) . '</td>';
 								echo '<td>' . $elem['fecha_almacenado'] . '</td>';
 								echo '<td>' . htmlspecialchars($elem['comentario']) . '</td>';
+								echo '<td><a href="comparchi.php?IDArchivo=' . $elem['IDArchivo'] . '">Compartir</a></td>';
 								echo '<td><a href="./codigos/borarchi.php?id=' . $elem['IDArchivo'] . '">Borrar</a></td>';
+								echo '</tr>';
+								$conta++;
+							} // fin del while
+						} // fin del if
+						if ($archivoCompartido && mysqli_num_rows($archivoCompartido) > 0) {
+							while ($elem = mysqli_fetch_assoc($archivoCompartido)) {
+								// Convertir peso de bytes a MB
+								$pesoMB = number_format($elem['peso'] / 1048576, 2);
+								
+								echo '<tr>';
+								echo '<td><a href="verarchi.php?id=' . $elem['IDArchivo'] . '"target=_blank>Compartido de ' . htmlspecialchars($elem['compartido_de']) . ' -> ' . htmlspecialchars($elem['nombre_archivo']) . '</a></td>';
+								echo '<td>' . $pesoMB . ' MB</td>';
+								echo '<td>' . htmlspecialchars($elem['tipo_documento']) . '</td>';
+								echo '<td>' . htmlspecialchars($elem['extension']) . '</td>';
+								echo '<td>' . $elem['fecha_almacenado'] . '</td>';
+								echo '<td>' . htmlspecialchars($elem['comentario']) . '</td>';
+								echo '<td>No permitido</td>';
+								echo '<td>No permitido</td>';
 								echo '</tr>';
 								$conta++;
 							} // fin del while
